@@ -39,7 +39,7 @@ place = []
 cv.imshow('image',img)
 cv.waitKey(0)
 
-
+cv.imwrite('120.jpg',dst,)
 
 cv.destroyAllWindows()
 plt.subplot(121),plt.imshow(img),plt.title('Input')
