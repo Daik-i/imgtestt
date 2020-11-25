@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
 
-threshold = 0.45
+threshold = 0.50
 template = [[] for i in range(20)]
 for i in range(20):
     template[i] = cv.imread('oo/num'+str(i)+'.jpg', 0)
@@ -27,7 +27,10 @@ def match(img,x,y):
         num = -1
     return num
 
-img_rgb = cv.imread('oo/223.jpg')
+img_rgb = cv.imread('oo/25.jpg')
+cv.imshow('image',img_rgb)
+cv.waitKey(0)
+
 height,width = img_rgb.shape[:2]
 print(img_rgb.shape[:2])
 

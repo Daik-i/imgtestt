@@ -44,7 +44,7 @@ def get_point(event,x,y,flags,param):
 point_dst = []
 start_theta = 0
 end_theta = 0
-img_rgb = cv.imread('oo/120.jpg')
+img_rgb = cv.imread('oo/222.jpg')
 cv.namedWindow('image')
 cv.setMouseCallback('image',get_point)
 height,width = img_rgb.shape[:2]
@@ -122,7 +122,7 @@ cv.waitKey(0)
 line_K = []
 line_b = []
 print(radius)
-lines = cv.HoughLines(canny_edge2,1,np.pi/180,int(radius*0.50))  #1>=0.72   3 <=0.65
+lines = cv.HoughLines(canny_edge2,1,np.pi/180,int(radius*0.22))  #1>=0.72   3 <=0.65
 print(lines)
 if len(lines) == 0:
     print('未检测到指针')
@@ -158,7 +158,7 @@ else:
 cv.imshow("image", img_rgb)
 cv.waitKey(0)
 print((line_theta-start_theta),(end_theta-start_theta))
-res_dst = (line_theta-start_theta)/(end_theta-start_theta)*0.6
+res_dst = (line_theta-start_theta)/(end_theta-start_theta)*1.6
 print(res_dst)
 cv.imshow("image", img_rgb)
 cv.waitKey(0)
