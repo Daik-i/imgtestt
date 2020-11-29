@@ -2,6 +2,9 @@ import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
 # mouse callback function
+
+
+# 将一个图片进行仿射变换
 def draw_circle(event,x,y,flags,param):
     global dst
     if event == cv.EVENT_LBUTTONDBLCLK:

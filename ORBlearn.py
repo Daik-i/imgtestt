@@ -39,7 +39,7 @@ def ORB_Feature(img1, img2):
     '''
     matches中保存的有两图对应关键点的匹配信息
     matches[i].distance     是两个关键点的各自特征组成的32维向量的距离，即特征匹配程度
-    matches[i].queryIdxi    猜测是关键点在前一幅图中的索引
+    matches[i].queryIdx    猜测是关键点在前一幅图中的索引
     matches[i].trainIdx     猜测是关键点在后一幅图中的索引
     matches[i].imgIdx       未知
     '''
