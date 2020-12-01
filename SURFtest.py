@@ -2,6 +2,7 @@
 # ‘’’
 # SURF算法
 # ‘’’
+# opencv 3.4.1.15
 import cv2
 import numpy as np
 #

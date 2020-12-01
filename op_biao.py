@@ -44,7 +44,7 @@ def get_point(event,x,y,flags,param):
 point_dst = []
 start_theta = 0
 end_theta = 0
-img_rgb = cv.imread('oo/222.jpg')
+img_rgb = cv.imread('oo/moban.jpg')
 cv.namedWindow('image')
 cv.setMouseCallback('image',get_point)
 height,width = img_rgb.shape[:2]
@@ -94,17 +94,17 @@ circles2 = cv.HoughCircles(img_gray, cv.HOUGH_GRADIENT_ALT, 2, 30, param1=300, p
 print(circles2)
 
 
-
+# 找出的圆里画出其边界，圆心，以及构造出以此圆为目标的掩码
 for circle in circles2[0]:
     center_x, center_y, radius = circle
     cv.circle(img_rgb, (center_x, center_y), int(radius),(0, 0, 255), 2)
     cv.circle(img_rgb, (center_x, center_y),3,(0, 0, 255), -1)
     cv.circle(roi_img, (center_x, center_y), int(radius),(255,255, 255), -1)
+    # cv.imshow("roi_img", roi_img)
     cv.imshow("image", img_rgb)
     cv.waitKey(0)
 
-
-
+# cv.add(img1,img2,mask)将两图进行相加运算并与掩码mask相与
 zero =  img_rgb*0
 img_add_mask = cv.add(img_rgb,zero,mask=roi_img)
 cv.imshow("image", img_add_mask)
