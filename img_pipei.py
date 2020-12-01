@@ -48,11 +48,13 @@ def ORB_Feature(img1, img2):
         return None
     return result
 
+# 画出匹配点
 def draw_match(img1, img2, kp1, kp2, match):
     outimage = cv.drawMatches(img1, kp1, img2, kp2, match, outImg=None)
     cv.imshow("Match Result", outimage)
     cv.waitKey(0)
 
+# 将仿射变换后的图像进行高斯去噪、灰度化、边缘检测
 def img_chuli(img):
     img_gauss = cv.GaussianBlur(img, (3, 3), 1)
     cv.imshow('image', img_gauss)
@@ -60,46 +62,61 @@ def img_chuli(img):
     img_gray = cv.cvtColor(img_gauss, cv.COLOR_RGB2GRAY)
     cv.imshow('image', img_gray)
     cv.waitKey(0)
-    # thre1 = cv.adaptiveThreshold(img_gray, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 7, 2)
-    # # ret, thre1 = cv.threshold(img_gray, 125, 255, cv.THRESH_BINARY)
-    # cv.imshow('image', thre1)
-    # cv.waitKey(0)
     canny_edge2 = cv.Canny(img_gray, threshold1=180, threshold2=230)
     cv.imshow("image", canny_edge2)
     cv.waitKey(0)
     return canny_edge2
 
+# 将边缘检测过的图像进行遮盖，只保留指针轨迹部分
 def img_mask(img):
     roi_img = np.zeros(img.shape[0:2], dtype=np.uint8)              # 掩码需要二进制图像
     zero = img * 0
-    cv.circle(roi_img, center, 145, (255, 255, 255), -1)
+    cv.circle(roi_img, center, 165, (255, 255, 255), -1)
     img_add_mask = cv.add(img, zero, mask=roi_img)
     cv.circle(img_add_mask, center, 75, (0, 0, 0), -1)
     cv.imshow("image", img_add_mask)
     cv.waitKey(0)
     return img_add_mask
 
-
-
 def img_duzhi(img):
-
-    # cv.circle(canny_edge2, center, 75, (0, 0, 0), 3)
-    # cv.circle(canny_edge2, center, 145, (0, 0, 0), 3)
-    # cv.imshow("result", canny_edge2)
-    # cv.waitKey(0)
+    detect_you(img)
+    cv.imshow("image", result1)
+    cv.waitKey(0)
 
 
+def detect_zuo(img):
+    roi_img = np.zeros([500,500], dtype=np.uint8)  # 掩码需要二进制图像
+    roi_img[0:500,0:251] = 255
+    zero = img * 0
+    img_add_mask = cv.add(img, zero, mask=roi_img)
+    cv.imshow("image", img_add_mask)
+    cv.waitKey(0)
+    jiao_detect(img_add_mask)
+
+def detect_you(img):
+    roi_img = np.zeros([500,500], dtype=np.uint8)  # 掩码需要二进制图像
+    roi_img[0:500,251:] = 255
+    zero = img * 0
+    img_add_mask = cv.add(img, zero, mask=roi_img)
+    cv.imshow("image", img_add_mask)
+    cv.waitKey(0)
+    jiao_detect(img_add_mask)
+
+
+def jiao_detect(img):
     line_K = []
     line_b = []
-    lines = cv.HoughLines(img, 1, np.pi / 180, 40)
+    lines = cv.HoughLines(img, 1, np.pi / 180, 55)
     print(lines)
     if len(lines) == 0:
         print('未检测到指针')
+        return False
     elif len(lines) == 1:
         x1, y1, x2, y2, rho, theta = get_line_point(lines[0][0], result1)
+
         line_theta = 90 - np.degrees(np.arctan((center[1] - y1) / (x1 - center[0])))  # 度数需要再考虑一下
         print(line_theta)
-        print('请选择初始位置和终止位置')
+        return line_theta
     elif len(lines) == 2:
         for line in lines:
             x1, y1, x2, y2, rho, theta = get_line_point(line[0], result1)
@@ -109,24 +126,20 @@ def img_duzhi(img):
             line_K.append(kb[0])
             line_b.append(kb[1])
         xy = get_cross_point([line_K[0] * -1, line_K[1] * -1], [1, 1], line_b)
-        cv.circle(img, (int(xy[0]), int(xy[1])), 3, (255, 0, 0), -1)
+        cv.circle(result1, (int(xy[0]), int(xy[1])), 3, (255, 0, 0), -1)
         if center[0] <= xy[0]:
             line_theta = 90 - np.degrees(np.arctan((center[1] - xy[1]) / (xy[0] - center[0])))
         else:
             line_theta = -90 - np.degrees(np.arctan((center[1] - xy[1]) / (xy[0] - center[0])))
         print(line_theta)
-        print('请选择初始位置和终止位置')
+        return line_theta
     else:
-        for line in lines:
-            x1, y1, x2, y2, rho, theta = get_line_point(line[0], result1)
         print('指针检测不准确，请重新检测')
-    cv.imshow("image", result1)
-    cv.waitKey(0)
-    # print((line_theta-start_theta),(end_theta-start_theta))
-    # res_dst = (line_theta-start_theta)/(end_theta-start_theta)*1.6
-    # print(res_dst)
-    # cv.imshow("image", img_rgb)
-    # cv.waitKey(0)
+        for i in lines:
+            x1, y1, x2, y2, rho, theta = get_line_point(i[0], result1)
+            print(i[0][1]*180/np.pi)
+
+        return False
 
 
 
@@ -141,6 +154,8 @@ def get_line_point(line,img):
     y1 = int(y0 + 1000 * (a))
     x2 = int(x0 - 1000 * (-b))
     y2 = int(y0 - 1000 * (a))
+    theta1 = theta*180/np.pi
+    print(x1,y1,theta1)
     cv.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
     return x1, y1, x2, y2, rho, theta
 
@@ -152,14 +167,28 @@ def get_cross_point(x,y,z):
     print(res_m)
     return res_m
 
+
+
+
+
+# print((line_theta-start_theta),(end_theta-start_theta))
+# res_dst = (line_theta-start_theta)/(end_theta-start_theta)*1.6
+# print(res_dst)
+# cv.imshow("image", img_rgb)
+# cv.waitKey(0)
+
+
 if __name__ == '__main__':
     # 读取图片
     # moban = cv.imread('oo/moban.jpg')
     # circle_opt(moban)
     center = (251,255)
     image1 = cv.imread('oo/moban.jpg')
-    image2 = cv.imread('oo/2224.jpg')
+    image2 = cv.imread('oo/moban00.jpg')
     result = result1 = ORB_Feature(image1, image2)
+    # cv.circle(result1, (100,200), 3, (255, 0, 0), -1)
+    # cv.imshow("image", result1)
+    # cv.waitKey(0)
     img_bian = img_chuli(result)
     img_opt = img_mask(img_bian)
     img_duzhi(img_opt)

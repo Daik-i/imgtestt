@@ -119,6 +119,18 @@ cv.waitKey(0)
 # cv.imshow("img",dst)
 # cv.waitKey(0)
 
+'''
+cv.HoughLines(canny_edge2,1,np.pi/180,int(radius*0.22))
+    image: 单通道的灰度图或二值图
+    rho: 距离步长，单位为像素(上述投票器中纵轴)
+    theta: 角度步长，单位为弧度 (上述投票器中横轴)
+    threshold: 投票器中计数阈值，当投票器中某个点的计数超过阈值，则认为该点对应图像中的一条直线，也可以理解为图像空间空中一条直线上的像素点个数阈值(如设为5，则表示这条直线至少包括5个像素点)
+    srn:默认为0， 用于在多尺度霍夫变换中作为参数rho的除数，rho=rho/srn
+    stn：默认值为0，用于在多尺度霍夫变换中作为参数theta的除数，theta=theta/stn
+        (如果srn和stn同时为0，就表示HoughLines函数执行标准霍夫变换，否则就是执行多尺度霍夫变换)
+    min_theta: 默认为0，表示直线与坐标轴x轴的最小夹角为0
+    max_theta：默认为CV_PI，表示直线与坐标轴x轴的最大夹角为180度
+'''
 line_K = []
 line_b = []
 print(radius)
