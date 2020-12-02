@@ -79,7 +79,18 @@ def img_mask(img):
     return img_add_mask
 
 def img_duzhi(img):
-    detect_you(img)
+    jieguo_zuo = detect_zuo(img)
+    if jieguo_zuo != False:
+        print("表盘数值为：{0:<.2}".format(jieguo_zuo))
+    else:
+        jieguo_you = detect_you(img)
+        if jieguo_you != False:
+            print("表盘数值为：{}".format(jieguo_you))
+        else:
+            if cuowu == 0:
+                print('未检测到指针')
+            else :
+                print('指针检测不准确，请重新检测')
     cv.imshow("image", result1)
     cv.waitKey(0)
 
@@ -91,7 +102,11 @@ def detect_zuo(img):
     img_add_mask = cv.add(img, zero, mask=roi_img)
     cv.imshow("image", img_add_mask)
     cv.waitKey(0)
-    jiao_detect(img_add_mask)
+    theta = get_theta(img_add_mask)
+    if theta != False:
+        return 111
+    else:
+        return False
 
 def detect_you(img):
     roi_img = np.zeros([500,500], dtype=np.uint8)  # 掩码需要二进制图像
@@ -100,51 +115,85 @@ def detect_you(img):
     img_add_mask = cv.add(img, zero, mask=roi_img)
     cv.imshow("image", img_add_mask)
     cv.waitKey(0)
-    jiao_detect(img_add_mask)
-
-
-def jiao_detect(img):
-    line_K = []
-    line_b = []
-    lines = cv.HoughLines(img, 1, np.pi / 180, 55)
-    print(lines)
-    if len(lines) == 0:
-        print('未检测到指针')
-        return False
-    elif len(lines) == 1:
-        x1, y1, x2, y2, rho, theta = get_line_point(lines[0][0], result1)
-
-        line_theta = 90 - np.degrees(np.arctan((center[1] - y1) / (x1 - center[0])))  # 度数需要再考虑一下
-        print(line_theta)
-        return line_theta
-    elif len(lines) == 2:
-        for line in lines:
-            x1, y1, x2, y2, rho, theta = get_line_point(line[0], result1)
-            A = [x1, x2]
-            B = [y1, y2]
-            kb = get_cross_point(A, [1, 1], B)
-            line_K.append(kb[0])
-            line_b.append(kb[1])
-        xy = get_cross_point([line_K[0] * -1, line_K[1] * -1], [1, 1], line_b)
-        cv.circle(result1, (int(xy[0]), int(xy[1])), 3, (255, 0, 0), -1)
-        if center[0] <= xy[0]:
-            line_theta = 90 - np.degrees(np.arctan((center[1] - xy[1]) / (xy[0] - center[0])))
-        else:
-            line_theta = -90 - np.degrees(np.arctan((center[1] - xy[1]) / (xy[0] - center[0])))
-        print(line_theta)
-        return line_theta
+    theta = get_theta(img_add_mask)
+    if theta != False:
+        return 222
     else:
-        print('指针检测不准确，请重新检测')
-        for i in lines:
-            x1, y1, x2, y2, rho, theta = get_line_point(i[0], result1)
-            print(i[0][1]*180/np.pi)
-
         return False
 
+# def jiao_detect(img):
+#     line_K = []
+#     line_b = []
+#     lines = cv.HoughLines(img, 1, np.pi / 180, 55)
+#     print(lines)
+#     if len(lines) == 0:
+#         print('未检测到指针')
+#         return False
+#     elif len(lines) == 1:
+#         x1, y1, x2, y2, rho, theta = get_line_point(lines[0][0], result1)
+#
+#         line_theta = 90 - np.degrees(np.arctan((center[1] - y1) / (x1 - center[0])))  # 度数需要再考虑一下
+#         print(line_theta)
+#         return line_theta
+#     elif len(lines) == 2:
+#         for line in lines:
+#             x1, y1, x2, y2, rho, theta = get_line_point(line[0], result1)
+#             A = [x1, x2]
+#             B = [y1, y2]
+#             kb = get_cross_point(A, [1, 1], B)
+#             line_K.append(kb[0])
+#             line_b.append(kb[1])
+#         xy = get_cross_point([line_K[0] * -1, line_K[1] * -1], [1, 1], line_b)
+#         cv.circle(result1, (int(xy[0]), int(xy[1])), 3, (255, 0, 0), -1)
+#         if center[0] <= xy[0]:
+#             line_theta = 90 - np.degrees(np.arctan((center[1] - xy[1]) / (xy[0] - center[0])))
+#         else:
+#             line_theta = -90 - np.degrees(np.arctan((center[1] - xy[1]) / (xy[0] - center[0])))
+#         print(line_theta)
+#         return line_theta
+#     else:
+#         print('指针检测不准确，请重新检测')
+#         for i in lines:
+#             x1, y1, x2, y2, rho, theta = get_line_point(i[0], result1)
+#             print(i[0][1]*180/np.pi)
+#
+#         return False
 
+def get_theta(img):
+    global cuowu
+    lines = cv.HoughLines(img, 1, np.pi / 180, 55)
+    print(type(lines))
+    try:
+        lenth = len(lines)
 
-# 通过距离和角度画出直线，返回其中两点和距离角度
-def get_line_point(line,img):
+    except:
+        lenth = 0
+    if lenth == 0 :
+        return False
+    elif lenth == 1:
+        draw_line(lines[0][0], result1)
+        theta = lines[0][0][1]
+        print(theta)
+        return theta
+    elif 2 <= lenth <= 5:
+        all_theta = []
+        for line in lines:
+            draw_line(line[0], result1)
+            all_theta.append(line[0][1])
+        theta_fanwei = np.ptp(all_theta)
+        if theta_fanwei < 4:
+            theta = np.mean(all_theta)
+            return theta
+        else:
+            cuowu += 1
+            return False
+    else:
+        cuowu += 1
+        for line in lines:
+            draw_line(line[0], result1)
+        return False
+
+def draw_line(line, img):
     rho, theta = line
     a = np.cos(theta)
     b = np.sin(theta)
@@ -152,20 +201,15 @@ def get_line_point(line,img):
     y0 = b * rho
     x1 = int(x0 + 1000 * (-b))
     y1 = int(y0 + 1000 * (a))
-    x2 = int(x0 - 1000 * (-b))
-    y2 = int(y0 - 1000 * (a))
-    theta1 = theta*180/np.pi
-    print(x1,y1,theta1)
-    cv.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
-    return x1, y1, x2, y2, rho, theta
+    cv.line(img, (x0, y0), (x1, y1), (0, 0, 255), 2)
 
-# 给出线性方程组并求解
-def get_cross_point(x,y,z):
-    A = np.array([x, y], dtype = float)
-    B = np.array(z)
-    res_m = np.linalg.solve(A.T, B)
-    print(res_m)
-    return res_m
+# # 给出线性方程组并求解
+# def get_cross_point(x,y,z):
+#     A = np.array([x, y], dtype = float)
+#     B = np.array(z)
+#     res_m = np.linalg.solve(A.T, B)
+#     print(res_m)
+#     return res_m
 
 
 
@@ -183,8 +227,9 @@ if __name__ == '__main__':
     # moban = cv.imread('oo/moban.jpg')
     # circle_opt(moban)
     center = (251,255)
+    cuowu = 0
     image1 = cv.imread('oo/moban.jpg')
-    image2 = cv.imread('oo/moban00.jpg')
+    image2 = cv.imread('oo/moban9.jpg')
     result = result1 = ORB_Feature(image1, image2)
     # cv.circle(result1, (100,200), 3, (255, 0, 0), -1)
     # cv.imshow("image", result1)
