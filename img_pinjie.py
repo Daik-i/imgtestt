@@ -21,13 +21,13 @@ def ORB_Feature(img1, img2):
     matches = sorted(matches, key=lambda x: x.distance)     # 将关键点匹配信息按特征向量的距离进行升序排列
 
     # 筛选匹配点，选最匹配的20个匹配点
-    goodMatch = matches[:20]
+    goodMatch = matches[:40]
     # 仿射变换所需的匹配点数必须大于4
     # 将匹配点对应的关键点位置信息取出并求仿射变换矩阵
     if len(goodMatch) > 4:
         ptsA = np.float32([kp1[m.queryIdx].pt for m in goodMatch]).reshape(-1, 1, 2)
         ptsB = np.float32([kp2[m.trainIdx].pt for m in goodMatch]).reshape(-1, 1, 2)
-        ransacReprojThreshold = 2           # 同一数值在不同版本中效果不同，例如在4.4中最优的4也没有3.4.1.15中的最优2效果好
+        ransacReprojThreshold = 3.3          # 同一数值在不同版本中效果不同，例如在4.4中最优的4也没有3.4.1.15中的最优2效果好
         M, status = cv.findHomography(ptsA, ptsB, cv.RANSAC, ransacReprojThreshold)
 
         # 将仿射的目的图片设置为两张图片的宽度大小，因为向右拼接的图片仿射就以交界的坐标为基准，故放射后就自然在拼接处
